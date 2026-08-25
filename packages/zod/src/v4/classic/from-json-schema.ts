@@ -527,6 +527,40 @@ function convertBaseSchema(schema: JSONSchema.JSONSchema, ctx: ConversionContext
             : schema.propertyNames;
         zodSchema = checkPropertyNames(zodSchema, convertSchema(keyJSONSchema as JSONSchema.JSONSchema, ctx));
       }
+
+      if (typeof schema.minProperties === "number") {
+        const min = schema.minProperties;
+        zodSchema = zodSchema.check((payload) => {
+          if (!isPlainObject(payload.value)) return;
+          const count = Object.keys(payload.value).length;
+          if (count < min) {
+            payload.issues.push({
+              code: "too_small",
+              origin: "object",
+              minimum: min,
+              inclusive: true,
+              input: payload.value,
+            });
+          }
+        });
+      }
+
+      if (typeof schema.maxProperties === "number") {
+        const max = schema.maxProperties;
+        zodSchema = zodSchema.check((payload) => {
+          if (!isPlainObject(payload.value)) return;
+          const count = Object.keys(payload.value).length;
+          if (count > max) {
+            payload.issues.push({
+              code: "too_big",
+              origin: "object",
+              maximum: max,
+              inclusive: true,
+              input: payload.value,
+            });
+          }
+        });
+      }
       break;
     }
 

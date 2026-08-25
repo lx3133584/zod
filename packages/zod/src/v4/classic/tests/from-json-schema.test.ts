@@ -1308,3 +1308,18 @@ test("__proto__ annotation key reaches the registry", () => {
   expect(Object.prototype.hasOwnProperty.call(meta, "__proto__")).toBe(true);
   expect(meta.__proto__).toEqual({ custom: 1 });
 });
+
+
+test("minProperties and maxProperties constraints on object", () => {
+  const schema = fromJSONSchema({
+    type: "object",
+    properties: { a: { type: "string" }, b: { type: "number" } },
+    minProperties: 1,
+    maxProperties: 2,
+  });
+
+  expect(schema.safeParse({}).success).toBe(false);
+  expect(schema.safeParse({ a: "x" }).success).toBe(true);
+  expect(schema.safeParse({ a: "x", b: 1 }).success).toBe(true);
+  expect(schema.safeParse({ a: "x", b: 1, c: true }).success).toBe(false);
+});
